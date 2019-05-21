@@ -1,8 +1,9 @@
-version: '2'
+version: '3.4'
 
 services:
 
   zammad-backup:
+    container_name: zammad-backup
     command: ["zammad-backup"]
     depends_on:
       - zammad-railsserver
@@ -12,16 +13,37 @@ services:
       - zammad-postgresql
     restart: ${RESTART}
     volumes:
-      - zammad-backup:/var/tmp/zammad
-      - zammad-data:/opt/zammad
+      - ${DATA_DIR}/zammad/backup:/var/tmp/zammad
+      - ${DATA_DIR}/zammad/data:/opt/zammad
+    networks:
+      operations_intranet:
+        ipv4_address: 172.30.88.2
+        aliases:
+          - zammad-backup
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == intranet
 
   zammad-elasticsearch:
+    container_name: zammad-elasticsearch
     image: ${IMAGE_REPO}:zammad-elasticsearch${VERSION}
     restart: ${RESTART}
     volumes:
-      - elasticsearch-data:/usr/share/elasticsearch/data
+      - ${BUILD_DIR}/zammad/elasticsearch:/usr/share/elasticsearch/data
+    networks:
+      operations_intranet:
+        ipv4_address: 172.30.88.3
+        aliases:
+          - zammad-elasticsearch
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == intranet
+          - node.labels.master == true
 
   zammad-init:
+    container_name: zammad-init
     command: ["zammad-init"]
     depends_on:
       - zammad-postgresql
@@ -31,14 +53,34 @@ services:
       - zammad-postgresql
     restart: on-failure
     volumes:
-      - zammad-data:/opt/zammad
+      - ${DATA_DIR}/zammad/data:/opt/zammad
+    networks:
+      operations_intranet:
+        ipv4_address: 172.30.88.4
+        aliases:
+          - zammad-init
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == intranet
 
   zammad-memcached:
+    container_name: zammad-memcached
     command: ["zammad-memcached"]
     image: ${IMAGE_REPO}:zammad-memcached${VERSION}
     restart: ${RESTART}
+    networks:
+      operations_intranet:
+        ipv4_address: 172.30.88.5
+        aliases:
+          - zammad-memcached
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == intranet
 
   zammad-nginx:
+    container_name: zammad-nginx
     command: ["zammad-nginx"]
     depends_on:
       - zammad-railsserver
@@ -48,17 +90,35 @@ services:
       - zammad-websocket
     restart: ${RESTART}
     volumes:
-      - zammad-data:/opt/zammad
-    expose:
-      - "80"
+      - ${DATA_DIR}/zammad/data:/opt/zammad
+    networks:
+      operations_intranet:
+        ipv4_address: 172.30.88.6
+        aliases:
+          - zammad-nginx
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == intranet
 
   zammad-postgresql:
+    container_name: zammad-postgresql
     image: ${IMAGE_REPO}:zammad-postgresql${VERSION}
     restart: ${RESTART}
     volumes:
-      - postgresql-data:/var/lib/postgresql/data
+      - ${DB_DIR}/zammad/postgresql:/var/lib/postgresql/data
+    networks:
+      operations_intranet:
+        ipv4_address: 172.30.88.7
+        aliases:
+          - zammad-postgresql
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == intranet
 
   zammad-railsserver:
+    container_name: zammad-railsserver
     command: ["zammad-railsserver"]
     depends_on:
       - zammad-memcached
@@ -70,9 +130,19 @@ services:
       - zammad-postgresql
     restart: ${RESTART}
     volumes:
-      - zammad-data:/opt/zammad
+      - ${DATA_DIR}/zammad/data:/opt/zammad
+    networks:
+      operations_intranet:
+        ipv4_address: 172.30.88.8
+        aliases:
+          - zammad-railserver
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == intranet
 
   zammad-scheduler:
+    container_name: zammad-scheduler
     command: ["zammad-scheduler"]
     depends_on:
       - zammad-memcached
@@ -84,9 +154,19 @@ services:
       - zammad-postgresql
     restart: ${RESTART}
     volumes:
-      - zammad-data:/opt/zammad
+      - ${DATA_DIR}/zammad/data:/opt/zammad
+    networks:
+      operations_intranet:
+        ipv4_address: 172.30.88.9
+        aliases:
+          - zammad-scheduler
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == intranet
 
   zammad-websocket:
+    container_name: zammad-websocket
     command: ["zammad-websocket"]
     depends_on:
       - zammad-memcached
@@ -97,14 +177,64 @@ services:
       - zammad-memcached
     restart: ${RESTART}
     volumes:
-      - zammad-data:/opt/zammad
+      - ${DATA_DIR}/zammad/data:/opt/zammad
+    networks:
+      operations_intranet:
+        ipv4_address: 172.30.88.10
+        aliases:
+          - zammad-websocket
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == intranet
 
-volumes:
-  elasticsearch-data:
-    driver: local
-  postgresql-data:
-    driver: local
-  zammad-backup:
-    driver: local
-  zammad-data:
-    driver: local
+  proxy-zammad:
+    container_name: proxy-zammad
+    build: ./proxy-zammad
+    image: registry.liquibrium.com/proxy-zammad
+    container_name: proxy-zammad
+    external_links:
+      - container-registry
+    depends_on:
+      - zammad-nginx
+    environment:
+      VIRTUAL_HOST: helpdesk.liquibrium.com
+      LETSENCRYPT_HOST: helpdesk.liquibrium.com
+      LETSENCRYPT_EMAIL: admin@liquibrium.com
+    networks:
+      operations_intranet:
+        ipv4_address: 172.30.88.11
+        aliases:
+          - proxy-zammad
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == intranet
+          - node.labels.proxy == true
+
+  proxy-zammad-internal:
+    container_name: proxy-zammad-internal
+    build: ./proxy-zammad
+    image: registry.liquibrium.com/proxy-zammad-internal
+    container_name: proxy-zammad
+    external_links:
+      - container-registry
+    depends_on:
+      - zammad-nginx
+    environment:
+      VIRTUAL_HOST: helpdesk.liquibrium.local
+      NETWORK_ACCESS: internal
+    networks:
+      operations_intranet:
+        ipv4_address: 172.30.88.12
+        aliases:
+          - proxy-zammad
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == intranet
+          - node.labels.proxy == true
+
+networks:
+  operations_intranet:
+    external: true
