@@ -191,7 +191,7 @@ services:
   proxy-zammad:
     container_name: proxy-zammad
     build: ./proxy-zammad
-    image: registry.liquibrium.com/proxy-zammad
+    image: registry.liquibrium.local/proxy-zammad
     container_name: proxy-zammad
     external_links:
       - container-registry
@@ -215,7 +215,7 @@ services:
   proxy-zammad-internal:
     container_name: proxy-zammad-internal
     build: ./proxy-zammad
-    image: registry.liquibrium.com/proxy-zammad-internal
+    image: registry.liquibrium.local/proxy-zammad-internal
     container_name: proxy-zammad
     external_links:
       - container-registry
