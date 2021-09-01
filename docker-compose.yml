@@ -4,10 +4,13 @@ services:
 
   backup:
     image: ${IMAGE_REPO}:zammad-postgresql${VERSION}
-    container_name: zammad-backup
+    container_name: helpdesk-backup
     command: ["zammad-backup"]
     depends_on:
       - railsserver
+    dns: ${DNS_IP_INTERNAL}
+    external_links:
+      - operations-dns
     entrypoint: /usr/local/bin/backup.sh
     links:
       - postgresql
@@ -20,10 +23,15 @@ services:
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.2
+        aliases:
+          - zammad-backup
 
   elasticsearch:
     image: ${IMAGE_REPO}:zammad-elasticsearch${VERSION}
-    container_name: zammad-elasticsearch
+    container_name: helpdesk-elasticsearch
+    dns: ${DNS_IP_INTERNAL}
+    external_links:
+      - operations-dns
     restart: ${RESTART}
     env_file:
       - ./helpdesk.env
@@ -32,11 +40,16 @@ services:
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.3
+        aliases:
+          - zammad-elasticsearch
 
   init:
     image: ${IMAGE_REPO}:zammad${VERSION}
-    container_name: zammad-init
+    container_name: helpdesk-init
     command: ["zammad-init"]
+    dns: ${DNS_IP_INTERNAL}
+    external_links:
+      - operations-dns
     depends_on:
       - postgresql
     links:
@@ -48,19 +61,29 @@ services:
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.4
+        aliases:
+          - zammad-init
 
   memcached:
     image: memcached:1.6.9-alpine
-    container_name: zammad-memcached
+    container_name: helpdesk-memcached
+    dns: ${DNS_IP_INTERNAL}
+    external_links:
+      - operations-dns
     command: memcached -m 256M
     restart: ${RESTART}
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.5
+        aliases:
+          - zammad-memcached
 
   nginx:
     image: ${IMAGE_REPO}:zammad${VERSION}
-    container_name: zammad-nginx
+    container_name: helpdesk-nginx
+    dns: ${DNS_IP_INTERNAL}
+    external_links:
+      - operations-dns
     command: ["zammad-nginx"]
     depends_on:
       - railsserver
@@ -73,10 +96,15 @@ services:
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.6
+        aliases:
+          - zammad-nginx
 
   postgresql:
     image: ${IMAGE_REPO}:zammad-postgresql${VERSION}
-    container_name: zammad-postgresql
+    container_name: helpdesk-postgresql
+    dns: ${DNS_IP_INTERNAL}
+    external_links:
+      - operations-dns
     restart: ${RESTART}
     env_file:
       - ./helpdesk.env
@@ -85,10 +113,15 @@ services:
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.7
+        aliases:
+          - zammad-postgresql
 
   railsserver:
     image: ${IMAGE_REPO}:zammad${VERSION}
-    container_name: zammad-railsserver
+    container_name: helpdesk-railsserver
+    dns: ${DNS_IP_INTERNAL}
+    external_links:
+      - operations-dns
     command: ["zammad-railsserver"]
     depends_on:
       - memcached
@@ -103,11 +136,16 @@ services:
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.8
+        aliases:
+          - zammad-railsserver
 
   scheduler:
     image: ${IMAGE_REPO}:zammad${VERSION}
-    container_name: zammad-scheduler
+    container_name: helpdesk-scheduler
     command: ["zammad-scheduler"]
+    dns: ${DNS_IP_INTERNAL}
+    external_links:
+      - operations-dns
     depends_on:
       - memcached
       - railsserver
@@ -121,11 +159,16 @@ services:
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.9
+        aliases:
+          - zammad-scheduler
 
   websocket:
     image: ${IMAGE_REPO}:zammad${VERSION}
-    container_name: zammad-websocket
+    container_name: helpdesk-websocket
     command: ["zammad-websocket"]
+    dns: ${DNS_IP_INTERNAL}
+    external_links:
+      - operations-dns
     depends_on:
       - memcached
       - railsserver
@@ -138,12 +181,24 @@ services:
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.10
+        aliases:
+          - zammad-websocket
 
   app-proxy:
     image: registry.finsec.localdomain/proxy-nginx
-    container_name: zammad-app-proxy
+    container_name: helpdesk-app-proxy
+    dns: ${DNS_IP_INTERNAL}
+    external_links:
+      - operations-dns
+      - operations-proxy
     depends_on:
       - nginx
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--no-verbose", "--tries=1", "http://helpdesk-app-proxy"]
+      interval: 60s
+      timeout: 120s
+      start_period: 100s
+      retries: 5
     environment:
       VIRTUAL_HOST: helpdesk.finsec.systems
     volumes:
@@ -154,9 +209,19 @@ services:
 
   app-proxy-internal:
     image: registry.finsec.localdomain/proxy-nginx
-    container_name: zammad-app-proxy-internal
+    container_name: helpdesk-app-proxy-internal
+    dns: ${DNS_IP_INTERNAL}
+    external_links:
+      - operations-dns
+      - operations-proxy
     depends_on:
       - nginx
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--no-verbose", "--tries=1", "http://helpdesk-app-proxy-internal"]
+      interval: 60s
+      timeout: 120s
+      start_period: 100s
+      retries: 5
     environment:
       VIRTUAL_HOST: helpdesk.finsec.localdomain
       NETWORK_ACCESS: internal
@@ -168,10 +233,19 @@ services:
 
   pgadmin:
     image: dpage/pgadmin4
-    container_name: zammad-pgadmin
+    container_name: helpdesk-pgadmin
+    dns: ${DNS_IP_INTERNAL}
+    external_links:
+      - operations-dns
     restart: always
     depends_on:
       - postgresql
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--no-verbose", "--tries=1", "http://helpdesk-pgadmin"]
+      interval: 60s
+      timeout: 120s
+      start_period: 100s
+      retries: 5
     volumes:
       - ${DATA_DIR}/zammad/pgadmin:/var/lib/pgadmin:rw
       - /etc/timezone:/etc/timezone:ro
@@ -184,9 +258,19 @@ services:
 
   pgadmin-proxy-internal:
     image: registry.finsec.localdomain/proxy-nginx
-    container_name: zammad-pgadmin-proxy-internal
+    container_name: helpdesk-pgadmin-proxy-internal
+    dns: ${DNS_IP_INTERNAL}
+    external_links:
+      - operations-dns
+      - operations-proxy
     depends_on:
       - pgadmin
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--no-verbose", "--tries=1", "http://helpdesk-pgadmin-proxy-internal"]
+      interval: 60s
+      timeout: 120s
+      start_period: 100s
+      retries: 5
     environment:
       VIRTUAL_HOST: helpdeskdb.finsec.localdomain
       NETWORK_ACCESS: internal
