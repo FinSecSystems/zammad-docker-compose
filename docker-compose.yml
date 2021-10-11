@@ -25,6 +25,12 @@ services:
         ipv4_address: 172.34.12.2
         aliases:
           - zammad-backup
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: logger.finsec.localdomain:24224
+        tag: "{{.Name}}.{{.ID}}"
+        fluentd-async: "true"
 
   elasticsearch:
     image: ${IMAGE_REPO}:zammad-elasticsearch${VERSION}
@@ -42,6 +48,12 @@ services:
         ipv4_address: 172.34.12.3
         aliases:
           - zammad-elasticsearch
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: logger.finsec.localdomain:24224
+        tag: "{{.Name}}.{{.ID}}"
+        fluentd-async: "true"
 
   init:
     image: ${IMAGE_REPO}:zammad${VERSION}
@@ -63,6 +75,12 @@ services:
         ipv4_address: 172.34.12.4
         aliases:
           - zammad-init
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: logger.finsec.localdomain:24224
+        tag: "{{.Name}}.{{.ID}}"
+        fluentd-async: "true"
 
   memcached:
     image: memcached:1.6.9-alpine
@@ -77,6 +95,12 @@ services:
         ipv4_address: 172.34.12.5
         aliases:
           - zammad-memcached
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: logger.finsec.localdomain:24224
+        tag: "{{.Name}}.{{.ID}}"
+        fluentd-async: "true"
 
   nginx:
     image: ${IMAGE_REPO}:zammad${VERSION}
@@ -98,6 +122,12 @@ services:
         ipv4_address: 172.34.12.6
         aliases:
           - zammad-nginx
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: logger.finsec.localdomain:24224
+        tag: "{{.Name}}.{{.ID}}"
+        fluentd-async: "true"
 
   postgresql:
     image: ${IMAGE_REPO}:zammad-postgresql${VERSION}
@@ -115,6 +145,12 @@ services:
         ipv4_address: 172.34.12.7
         aliases:
           - zammad-postgresql
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: logger.finsec.localdomain:24224
+        tag: "{{.Name}}.{{.ID}}"
+        fluentd-async: "true"
 
   railsserver:
     image: ${IMAGE_REPO}:zammad${VERSION}
@@ -138,6 +174,12 @@ services:
         ipv4_address: 172.34.12.8
         aliases:
           - zammad-railsserver
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: logger.finsec.localdomain:24224
+        tag: "{{.Name}}.{{.ID}}"
+        fluentd-async: "true"
 
   scheduler:
     image: ${IMAGE_REPO}:zammad${VERSION}
@@ -161,6 +203,12 @@ services:
         ipv4_address: 172.34.12.9
         aliases:
           - zammad-scheduler
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: logger.finsec.localdomain:24224
+        tag: "{{.Name}}.{{.ID}}"
+        fluentd-async: "true"
 
   websocket:
     image: ${IMAGE_REPO}:zammad${VERSION}
@@ -183,6 +231,12 @@ services:
         ipv4_address: 172.34.12.10
         aliases:
           - zammad-websocket
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: logger.finsec.localdomain:24224
+        tag: "{{.Name}}.{{.ID}}"
+        fluentd-async: "true"
 
   app-proxy:
     image: registry.finsec.localdomain/proxy-nginx
@@ -206,6 +260,12 @@ services:
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.11
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: logger.finsec.localdomain:24224
+        tag: "{{.Name}}.{{.ID}}"
+        fluentd-async: "true"
 
   app-proxy-internal:
     image: registry.finsec.localdomain/proxy-nginx
@@ -230,6 +290,12 @@ services:
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.12
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: logger.finsec.localdomain:24224
+        tag: "{{.Name}}.{{.ID}}"
+        fluentd-async: "true"
 
   pgadmin:
     image: dpage/pgadmin4
@@ -255,6 +321,12 @@ services:
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.13
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: logger.finsec.localdomain:24224
+        tag: "{{.Name}}.{{.ID}}"
+        fluentd-async: "true"
 
   pgadmin-proxy-internal:
     image: registry.finsec.localdomain/proxy-nginx
@@ -282,6 +354,12 @@ services:
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.14
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: logger.finsec.localdomain:24224
+        tag: "{{.Name}}.{{.ID}}"
+        fluentd-async: "true"
 
 networks:
   operations_intranet:
