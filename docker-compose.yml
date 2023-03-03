@@ -26,14 +26,14 @@ services:
         ipv4_address: 172.34.12.2
         aliases:
           - zammad-backup
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: logger.finsec.localdomain:24224
-        tag: "{{.Name}}.{{.ID}}"
-        fluentd-async: "true"
-        fluentd-max-retries: "144"
-        fluentd-retry-wait: "600s"
+    # logging:
+    #   driver: "fluentd"
+    #   options:
+    #     fluentd-address: logger.finsec.localdomain:24224
+    #     tag: "{{.Name}}.{{.ID}}"
+    #     fluentd-async: "true"
+    #     fluentd-max-retries: "144"
+    #     fluentd-retry-wait: "600s"
 
   elasticsearch:
     image: ${IMAGE_REPO}:zammad-elasticsearch${VERSION}
@@ -52,14 +52,14 @@ services:
         ipv4_address: 172.34.12.3
         aliases:
           - zammad-elasticsearch
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: logger.finsec.localdomain:24224
-        tag: "{{.Name}}.{{.ID}}"
-        fluentd-async: "true"
-        fluentd-max-retries: "144"
-        fluentd-retry-wait: "600s"
+    # logging:
+    #   driver: "fluentd"
+    #   options:
+    #     fluentd-address: logger.finsec.localdomain:24224
+    #     tag: "{{.Name}}.{{.ID}}"
+    #     fluentd-async: "true"
+    #     fluentd-max-retries: "144"
+    #     fluentd-retry-wait: "600s"
 
   init:
     image: ${IMAGE_REPO}:zammad${VERSION}
@@ -82,14 +82,14 @@ services:
         ipv4_address: 172.34.12.4
         aliases:
           - zammad-init
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: logger.finsec.localdomain:24224
-        tag: "{{.Name}}.{{.ID}}"
-        fluentd-async: "true"
-        fluentd-max-retries: "144"
-        fluentd-retry-wait: "600s"
+    # logging:
+    #   driver: "fluentd"
+    #   options:
+    #     fluentd-address: logger.finsec.localdomain:24224
+    #     tag: "{{.Name}}.{{.ID}}"
+    #     fluentd-async: "true"
+    #     fluentd-max-retries: "144"
+    #     fluentd-retry-wait: "600s"
 
   memcached:
     image: memcached:1.6.9-alpine
@@ -105,14 +105,14 @@ services:
         ipv4_address: 172.34.12.5
         aliases:
           - zammad-memcached
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: logger.finsec.localdomain:24224
-        tag: "{{.Name}}.{{.ID}}"
-        fluentd-async: "true"
-        fluentd-max-retries: "144"
-        fluentd-retry-wait: "600s"
+    # logging:
+    #   driver: "fluentd"
+    #   options:
+    #     fluentd-address: logger.finsec.localdomain:24224
+    #     tag: "{{.Name}}.{{.ID}}"
+    #     fluentd-async: "true"
+    #     fluentd-max-retries: "144"
+    #     fluentd-retry-wait: "600s"
 
   nginx:
     image: ${IMAGE_REPO}:zammad${VERSION}
@@ -135,14 +135,14 @@ services:
         ipv4_address: 172.34.12.6
         aliases:
           - zammad-nginx
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: logger.finsec.localdomain:24224
-        tag: "{{.Name}}.{{.ID}}"
-        fluentd-async: "true"
-        fluentd-max-retries: "144"
-        fluentd-retry-wait: "600s"
+    # logging:
+    #   driver: "fluentd"
+    #   options:
+    #     fluentd-address: logger.finsec.localdomain:24224
+    #     tag: "{{.Name}}.{{.ID}}"
+    #     fluentd-async: "true"
+    #     fluentd-max-retries: "144"
+    #     fluentd-retry-wait: "600s"
 
   postgresql:
     image: ${IMAGE_REPO}:zammad-postgresql${VERSION}
@@ -161,14 +161,14 @@ services:
         ipv4_address: 172.34.12.7
         aliases:
           - zammad-postgresql
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: logger.finsec.localdomain:24224
-        tag: "{{.Name}}.{{.ID}}"
-        fluentd-async: "true"
-        fluentd-max-retries: "144"
-        fluentd-retry-wait: "600s"
+    # logging:
+    #   driver: "fluentd"
+    #   options:
+    #     fluentd-address: logger.finsec.localdomain:24224
+    #     tag: "{{.Name}}.{{.ID}}"
+    #     fluentd-async: "true"
+    #     fluentd-max-retries: "144"
+    #     fluentd-retry-wait: "600s"
 
   railsserver:
     image: ${IMAGE_REPO}:zammad${VERSION}
@@ -193,14 +193,14 @@ services:
         ipv4_address: 172.34.12.8
         aliases:
           - zammad-railsserver
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: logger.finsec.localdomain:24224
-        tag: "{{.Name}}.{{.ID}}"
-        fluentd-async: "true"
-        fluentd-max-retries: "144"
-        fluentd-retry-wait: "600s"
+    # logging:
+    #   driver: "fluentd"
+    #   options:
+    #     fluentd-address: logger.finsec.localdomain:24224
+    #     tag: "{{.Name}}.{{.ID}}"
+    #     fluentd-async: "true"
+    #     fluentd-max-retries: "144"
+    #     fluentd-retry-wait: "600s"
 
   scheduler:
     image: ${IMAGE_REPO}:zammad${VERSION}
@@ -225,14 +225,14 @@ services:
         ipv4_address: 172.34.12.9
         aliases:
           - zammad-scheduler
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: logger.finsec.localdomain:24224
-        tag: "{{.Name}}.{{.ID}}"
-        fluentd-async: "true"
-        fluentd-max-retries: "144"
-        fluentd-retry-wait: "600s"
+    # logging:
+    #   driver: "fluentd"
+    #   options:
+    #     fluentd-address: logger.finsec.localdomain:24224
+    #     tag: "{{.Name}}.{{.ID}}"
+    #     fluentd-async: "true"
+    #     fluentd-max-retries: "144"
+    #     fluentd-retry-wait: "600s"
 
   websocket:
     image: ${IMAGE_REPO}:zammad${VERSION}
@@ -256,14 +256,14 @@ services:
         ipv4_address: 172.34.12.10
         aliases:
           - zammad-websocket
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: logger.finsec.localdomain:24224
-        tag: "{{.Name}}.{{.ID}}"
-        fluentd-async: "true"
-        fluentd-max-retries: "144"
-        fluentd-retry-wait: "600s"
+    # logging:
+    #   driver: "fluentd"
+    #   options:
+    #     fluentd-address: logger.finsec.localdomain:24224
+    #     tag: "{{.Name}}.{{.ID}}"
+    #     fluentd-async: "true"
+    #     fluentd-max-retries: "144"
+    #     fluentd-retry-wait: "600s"
 
   app-proxy:
     image: registry.finsec.localdomain/proxy-nginx
@@ -290,14 +290,14 @@ services:
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.11
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: logger.finsec.localdomain:24224
-        tag: "{{.Name}}.{{.ID}}"
-        fluentd-async: "true"
-        fluentd-max-retries: "144"
-        fluentd-retry-wait: "600s"
+    # logging:
+    #   driver: "fluentd"
+    #   options:
+    #     fluentd-address: logger.finsec.localdomain:24224
+    #     tag: "{{.Name}}.{{.ID}}"
+    #     fluentd-async: "true"
+    #     fluentd-max-retries: "144"
+    #     fluentd-retry-wait: "600s"
 
   app-proxy-internal:
     image: registry.finsec.localdomain/proxy-nginx
@@ -325,14 +325,14 @@ services:
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.12
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: logger.finsec.localdomain:24224
-        tag: "{{.Name}}.{{.ID}}"
-        fluentd-async: "true"
-        fluentd-max-retries: "144"
-        fluentd-retry-wait: "600s"
+    # logging:
+    #   driver: "fluentd"
+    #   options:
+    #     fluentd-address: logger.finsec.localdomain:24224
+    #     tag: "{{.Name}}.{{.ID}}"
+    #     fluentd-async: "true"
+    #     fluentd-max-retries: "144"
+    #     fluentd-retry-wait: "600s"
 
   pgadmin:
     image: dpage/pgadmin4
@@ -359,14 +359,14 @@ services:
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.13
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: logger.finsec.localdomain:24224
-        tag: "{{.Name}}.{{.ID}}"
-        fluentd-async: "true"
-        fluentd-max-retries: "144"
-        fluentd-retry-wait: "600s"
+    # logging:
+    #   driver: "fluentd"
+    #   options:
+    #     fluentd-address: logger.finsec.localdomain:24224
+    #     tag: "{{.Name}}.{{.ID}}"
+    #     fluentd-async: "true"
+    #     fluentd-max-retries: "144"
+    #     fluentd-retry-wait: "600s"
 
   pgadmin-proxy-internal:
     image: registry.finsec.localdomain/proxy-nginx
@@ -396,14 +396,14 @@ services:
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.14
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: logger.finsec.localdomain:24224
-        tag: "{{.Name}}.{{.ID}}"
-        fluentd-async: "true"
-        fluentd-max-retries: "144"
-        fluentd-retry-wait: "600s"
+    # logging:
+    #   driver: "fluentd"
+    #   options:
+    #     fluentd-address: logger.finsec.localdomain:24224
+    #     tag: "{{.Name}}.{{.ID}}"
+    #     fluentd-async: "true"
+    #     fluentd-max-retries: "144"
+    #     fluentd-retry-wait: "600s"
 
 networks:
   operations_intranet:
