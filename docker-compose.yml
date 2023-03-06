@@ -350,10 +350,13 @@ services:
       timeout: 120s
       start_period: 100s
       retries: 5
+    user: 5050:5050
     volumes:
       - ${DATA_DIR}/zammad/pgadmin:/var/lib/pgadmin:rw
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+    tmpfs:
+      - /var/lib/pgadmin/sessions:uid=5050,gid=5050
     env_file:
       - ./helpdesk.env
     networks:
