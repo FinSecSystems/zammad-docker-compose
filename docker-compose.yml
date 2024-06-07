@@ -279,7 +279,7 @@ services:
       - nginx
     healthcheck:
       test: ["CMD", "wget", "--spider", "--no-verbose", "--tries=1", "http://helpdesk-app-proxy"]
-      interval: 60s
+      interval: 300s
       timeout: 120s
       start_period: 100s
       retries: 5
@@ -313,7 +313,7 @@ services:
       - nginx
     healthcheck:
       test: ["CMD", "wget", "--spider", "--no-verbose", "--tries=1", "http://helpdesk-app-proxy-internal"]
-      interval: 60s
+      interval: 300s
       timeout: 120s
       start_period: 100s
       retries: 5
@@ -346,7 +346,7 @@ services:
       - postgresql
     healthcheck:
       test: ["CMD", "wget", "--spider", "--no-verbose", "--tries=1", "http://helpdesk-pgadmin"]
-      interval: 60s
+      interval: 300s
       timeout: 120s
       start_period: 100s
       retries: 5
@@ -385,7 +385,7 @@ services:
       - pgadmin
     healthcheck:
       test: ["CMD", "wget", "--spider", "--no-verbose", "--tries=1", "http://helpdesk-pgadmin-proxy-internal"]
-      interval: 60s
+      interval: 300s
       timeout: 120s
       start_period: 100s
       retries: 5
