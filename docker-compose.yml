@@ -1,5 +1,3 @@
-version: '3.4'
-
 services:
 
   backup:
@@ -269,7 +267,7 @@ services:
     image: registry.finsec.localdomain/proxy-nginx
     container_name: helpdesk-app-proxy
     dns: ${DNS_IP_INTERNAL}
-    restart: unless-stopped
+    restart: $(RESTART}
     external_links:
       - operations:dns
       - logs:fluentd
@@ -303,7 +301,7 @@ services:
     image: registry.finsec.localdomain/proxy-nginx
     container_name: helpdesk-app-proxy-internal
     dns: ${DNS_IP_INTERNAL}
-    restart: unless-stopped
+    restart: $(RESTART}
     external_links:
       - operations:dns
       - logs:fluentd
@@ -341,7 +339,7 @@ services:
     external_links:
       - operations:dns
       - logs:fluentd
-    restart: unless-stopped
+    restart: $(RESTART}
     depends_on:
       - postgresql
     healthcheck:
@@ -375,7 +373,7 @@ services:
     image: registry.finsec.localdomain/proxy-nginx
     container_name: helpdesk-pgadmin-proxy-internal
     dns: ${DNS_IP_INTERNAL}
-    restart: unless-stopped
+    restart: $(RESTART}
     external_links:
       - operations:dns
       - logs:fluentd
