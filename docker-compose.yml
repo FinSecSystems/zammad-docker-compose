@@ -17,7 +17,7 @@ services:
     env_file:
       - ./helpdesk.env
     volumes:
-      - ${NR_DATA_DIR}/zammad/backup:/var/tmp/zammad
+      - ${DATA_DIR}/zammad/backup:/var/tmp/zammad
       - ${DATA_DIR}/zammad/data:/opt/zammad
     networks:
       operations_intranet:
