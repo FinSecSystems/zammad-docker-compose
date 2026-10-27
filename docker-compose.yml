@@ -9,7 +9,6 @@ services:
     dns: ${DNS_IP_INTERNAL}
     external_links:
       - operations:dns
-      - logs:fluentd
     entrypoint: /usr/local/bin/backup.sh
     links:
       - postgresql
@@ -31,7 +30,6 @@ services:
     dns: ${DNS_IP_INTERNAL}
     external_links:
       - operations:dns
-      - logs:fluentd
     restart: ${RESTART}
     env_file:
       - ./helpdesk.env
@@ -50,7 +48,6 @@ services:
     dns: ${DNS_IP_INTERNAL}
     external_links:
       - operations:dns
-      - logs:fluentd
     depends_on:
       - postgresql
     links:
@@ -71,7 +68,6 @@ services:
     dns: ${DNS_IP_INTERNAL}
     external_links:
       - operations:dns
-      - logs:fluentd
     command: memcached -m 256M
     restart: ${RESTART}
     networks:
@@ -86,7 +82,6 @@ services:
     dns: ${DNS_IP_INTERNAL}
     external_links:
       - operations:dns
-      - logs:fluentd
     command: ["zammad-nginx"]
     depends_on:
       - railsserver
@@ -107,7 +102,6 @@ services:
     container_name: helpdesk-postgresql
     external_links:
       - operations:dns
-      - logs:fluentd
     dns: ${DNS_IP_INTERNAL}
     restart: ${RESTART}
     env_file:
@@ -126,7 +120,6 @@ services:
     dns: ${DNS_IP_INTERNAL}
     external_links:
       - operations:dns
-      - logs:fluentd
     command: ["zammad-railsserver"]
     depends_on:
       - memcached
@@ -151,7 +144,6 @@ services:
     dns: ${DNS_IP_INTERNAL}
     external_links:
       - operations:dns
-      - logs:fluentd
     depends_on:
       - memcached
       - railsserver
@@ -175,7 +167,6 @@ services:
     dns: ${DNS_IP_INTERNAL}
     external_links:
       - operations:dns
-      - logs:fluentd
     depends_on:
       - memcached
       - railsserver
@@ -198,7 +189,6 @@ services:
     restart: ${RESTART}
     external_links:
       - operations:dns
-      - logs:fluentd
       - operations:container-registry
       - operations:proxy
     depends_on:
@@ -224,7 +214,6 @@ services:
     restart: ${RESTART}
     external_links:
       - operations:dns
-      - logs:fluentd
       - operations:container-registry
       - operations:proxy
     depends_on:
@@ -250,7 +239,6 @@ services:
     dns: ${DNS_IP_INTERNAL}
     external_links:
       - operations:dns
-      - logs:fluentd
     restart: ${RESTART}
     depends_on:
       - postgresql
@@ -280,7 +268,6 @@ services:
     restart: ${RESTART}
     external_links:
       - operations:dns
-      - logs:fluentd
       - operations:proxy
       - operations:container-registry
     depends_on:
