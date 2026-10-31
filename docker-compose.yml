@@ -234,7 +234,7 @@ services:
         ipv4_address: 172.34.12.12
 
   pgadmin:
-    image: dpage/pgadmin4@sha256:2f4ce946ddf8360680d7eff4eaba1d91859eb6b4003e6623bad5c63a322c2f4d  # pinned digest (was untagged; version unknown, 2026-10-18)
+    image: dpage/pgadmin4:9.18.0   # pinned tag, same in every stack (issue #7; was a digest of 9.17 / 8.6 in penpot)
     container_name: helpdesk-pgadmin
     dns: ${DNS_IP_INTERNAL}
     external_links:
