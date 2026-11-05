@@ -27,6 +27,9 @@ services:
   elasticsearch:
     image: ${IMAGE_REPO}:zammad-elasticsearch${VERSION}
     container_name: helpdesk-elasticsearch
+    mem_limit: 1536m                   # hard cap: without it the JVM sized its heap from the 62 GB host and was OOM-killed at 17 GB (2026-11-05)
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"   # the index is about 36 MB
     dns: ${DNS_IP_INTERNAL}
     external_links:
       - operations:dns
