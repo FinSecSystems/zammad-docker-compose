@@ -48,6 +48,8 @@ services:
     image: ${IMAGE_REPO}:zammad${VERSION}
     container_name: helpdesk-init
     command: ["zammad-init"]
+    env_file:
+      - ./helpdesk.env   # POSTGRESQL_PASS: zammad-init writes it into config/database.yml (without it the default 'zammad' would be used)
     dns: ${DNS_IP_INTERNAL}
     external_links:
       - operations:dns
