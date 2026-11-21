@@ -261,7 +261,7 @@ services:
       - /var/lib/pgadmin/sessions:uid=5050,gid=5050
     env_file:
       - ./helpdesk.env
-      - ./pgadmin.env
+      - ../common/pgadmin.env
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.13
