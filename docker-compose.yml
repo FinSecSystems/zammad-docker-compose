@@ -254,12 +254,14 @@ services:
     user: 5050:5050
     volumes:
       - ${DATA_DIR}/zammad/pgadmin:/var/lib/pgadmin:rw
+      - ../common/ca-bundle.pem:/ca-bundle.pem:ro   # system roots + internal root CA for the OIDC discovery
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     tmpfs:
       - /var/lib/pgadmin/sessions:uid=5050,gid=5050
     env_file:
       - ./helpdesk.env
+      - ./pgadmin.env
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.13
