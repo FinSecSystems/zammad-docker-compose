@@ -19,6 +19,7 @@ x-zammad: &zammad-service
     POSTGRESQL_DB_CREATE: "false"
     POSTGRESQL_OPTIONS: "?pool=50"
     REDIS_URL: redis://zammad-redis:6379
+    SSL_CERT_FILE: /ca-bundle.pem        # system roots + the internal root CA: the OIDC discovery of https://auth.finsec.localdomain (issue #108)
     NGINX_SERVER_SCHEME: https           # zammad-nginx sends X-Forwarded-Proto from this; the TLS ends at the edge proxy, without it Rails sees http and fails the CSRF check
     ELASTICSEARCH_ENABLED: "true"
     ELASTICSEARCH_SCHEMA: http
@@ -30,6 +31,7 @@ x-zammad: &zammad-service
     TZ: Europe/Berlin
   volumes:
     - ${BUILD_DIR}/helpdesk/storage:/opt/zammad/storage     # attachments are stored in the database; this holds the rest
+    - ../common/ca-bundle.pem:/ca-bundle.pem:ro
     - ${DATA_DIR}/zammad/backup:/var/tmp/zammad:ro          # needed for waiting on restore operations
   external_links:
     - operations:dns
@@ -47,6 +49,7 @@ services:
     volumes:
       - ${BUILD_DIR}/helpdesk/storage:/opt/zammad/storage
       - ${DATA_DIR}/zammad/backup:/var/tmp/zammad
+      - ../common/ca-bundle.pem:/ca-bundle.pem:ro
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.2
@@ -95,6 +98,7 @@ services:
     volumes:
       - ${BUILD_DIR}/helpdesk/storage:/opt/zammad/storage
       - ${DATA_DIR}/zammad/backup:/var/tmp/zammad:ro
+      - ../common/ca-bundle.pem:/ca-bundle.pem:ro
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.4
