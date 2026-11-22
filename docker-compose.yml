@@ -1,23 +1,51 @@
+# Zammad 7.2.x on the current upstream layout (zammad/zammad-docker-compose v17.x): ghcr.io/zammad/zammad image
+# with PostgreSQL 17, Redis, memcached and Elasticsearch 9. Upgraded from 5.2.3 on 2026-11-22 (issue #119).
+# The old PostgreSQL 9.6 data ($DB_DIR/zammad/postgresql), the old /opt/zammad tree ($BUILD_DIR/helpdesk/zammad) and the
+# Elasticsearch 7 data ($BUILD_DIR/zammad/elasticsearch) are kept for rollback and removed after the check period.
+
+x-zammad: &zammad-service
+  image: ghcr.io/zammad/zammad:7.2.3
+  init: true
+  dns: ${DNS_IP_INTERNAL}
+  restart: ${RESTART}
+  env_file:
+    - ./helpdesk.env                    # POSTGRESQL_PASS
+  environment: &zammad-env
+    MEMCACHE_SERVERS: zammad-memcached:11211
+    POSTGRESQL_HOST: zammad-postgresql
+    POSTGRESQL_PORT: "5432"
+    POSTGRESQL_USER: zammad
+    POSTGRESQL_DB: zammad_production
+    POSTGRESQL_DB_CREATE: "false"
+    POSTGRESQL_OPTIONS: "?pool=50"
+    REDIS_URL: redis://zammad-redis:6379
+    ELASTICSEARCH_ENABLED: "true"
+    ELASTICSEARCH_SCHEMA: http
+    ELASTICSEARCH_HOST: zammad-elasticsearch
+    ELASTICSEARCH_PORT: "9200"
+    BACKUP_DIR: /var/tmp/zammad
+    BACKUP_TIME: "03:00"
+    HOLD_DAYS: "10"
+    TZ: Europe/Berlin
+  volumes:
+    - ${BUILD_DIR}/helpdesk/storage:/opt/zammad/storage     # attachments are stored in the database; this holds the rest
+    - ${DATA_DIR}/zammad/backup:/var/tmp/zammad:ro          # needed for waiting on restore operations
+  external_links:
+    - operations:dns
+
 services:
 
   backup:
-    image: ${IMAGE_REPO}:zammad-postgresql${VERSION}
+    <<: *zammad-service
     container_name: helpdesk-backup
     command: ["zammad-backup"]
+    user: 0:0
     depends_on:
-      - railsserver
-    dns: ${DNS_IP_INTERNAL}
-    external_links:
-      - operations:dns
-    entrypoint: /usr/local/bin/backup.sh
-    links:
-      - postgresql
-    restart: ${RESTART}
-    env_file:
-      - ./helpdesk.env
+      postgresql:
+        condition: service_healthy
     volumes:
+      - ${BUILD_DIR}/helpdesk/storage:/opt/zammad/storage
       - ${DATA_DIR}/zammad/backup:/var/tmp/zammad
-      - ${BUILD_DIR}/helpdesk/zammad:/opt/zammad
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.2
@@ -25,19 +53,25 @@ services:
           - zammad-backup
 
   elasticsearch:
-    image: ${IMAGE_REPO}:zammad-elasticsearch${VERSION}
+    image: elasticsearch:9.5.5
     container_name: helpdesk-elasticsearch
     mem_limit: 1536m                   # hard cap: without it the JVM sized its heap from the 62 GB host and was OOM-killed at 17 GB (2026-11-05)
     environment:
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"   # the index is about 36 MB
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"   # the index is about 36 MB
     dns: ${DNS_IP_INTERNAL}
     external_links:
       - operations:dns
     restart: ${RESTART}
-    env_file:
-      - ./helpdesk.env
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:9200/_cluster/health || exit 1"]
+      interval: 300s
+      timeout: 120s
+      start_period: 100s
+      retries: 5
     volumes:
-      - ${BUILD_DIR}/zammad/elasticsearch:/usr/share/elasticsearch/data:rw
+      - ${BUILD_DIR}/zammad/elasticsearch9:/usr/share/elasticsearch/data:rw
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.3
@@ -45,22 +79,21 @@ services:
           - zammad-elasticsearch
 
   init:
-    image: ${IMAGE_REPO}:zammad${VERSION}
+    <<: *zammad-service
     container_name: helpdesk-init
     command: ["zammad-init"]
-    env_file:
-      - ./helpdesk.env   # POSTGRESQL_PASS: zammad-init writes it into config/database.yml (without it the default 'zammad' would be used)
-    dns: ${DNS_IP_INTERNAL}
-    external_links:
-      - operations:dns
-    depends_on:
-      - postgresql
-    links:
-      - elasticsearch
-      - postgresql
+    user: 0:0
     restart: on-failure
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      memcached:
+        condition: service_healthy
     volumes:
-      - ${BUILD_DIR}/helpdesk/zammad:/opt/zammad
+      - ${BUILD_DIR}/helpdesk/storage:/opt/zammad/storage
+      - ${DATA_DIR}/zammad/backup:/var/tmp/zammad:ro
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.4
@@ -75,6 +108,12 @@ services:
       - operations:dns
     command: memcached -m 256M
     restart: ${RESTART}
+    healthcheck:
+      test: ["CMD", "nc", "-z", "127.0.0.1", "11211"]
+      interval: 60s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.5
@@ -82,20 +121,13 @@ services:
           - zammad-memcached
 
   nginx:
-    image: ${IMAGE_REPO}:zammad${VERSION}
+    <<: *zammad-service
     container_name: helpdesk-nginx
-    dns: ${DNS_IP_INTERNAL}
-    external_links:
-      - operations:dns
     command: ["zammad-nginx"]
+    init: false
     depends_on:
-      - railsserver
-    links:
-      - railsserver
-      - websocket
-    restart: ${RESTART}
-    volumes:
-      - ${BUILD_DIR}/helpdesk/zammad:/opt/zammad
+      railsserver:
+        condition: service_healthy
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.6
@@ -103,16 +135,25 @@ services:
           - zammad-nginx
 
   postgresql:
-    image: ${IMAGE_REPO}:zammad-postgresql${VERSION}
+    image: postgres:17.12-alpine       # was 9.6; data dir is new, the 9.6 one is kept for rollback
     container_name: helpdesk-postgresql
     external_links:
       - operations:dns
     dns: ${DNS_IP_INTERNAL}
     restart: ${RESTART}
+    shm_size: 64mb
     env_file:
-      - ./helpdesk.env
+      - ./helpdesk.env                 # POSTGRES_USER=zammad, POSTGRES_PASSWORD
+    environment:
+      POSTGRES_DB: zammad_production
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zammad -d zammad_production"]
+      interval: 60s
+      timeout: 10s
+      start_period: 60s
+      retries: 5
     volumes:
-      - ${DB_DIR}/zammad/postgresql:/var/lib/postgresql/data
+      - ${DB_DIR}/zammad/postgresql17:/var/lib/postgresql/data
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.7
@@ -120,45 +161,55 @@ services:
           - zammad-postgresql
 
   railsserver:
-    image: ${IMAGE_REPO}:zammad${VERSION}
+    <<: *zammad-service
     container_name: helpdesk-railsserver
-    dns: ${DNS_IP_INTERNAL}
-    external_links:
-      - operations:dns
     command: ["zammad-railsserver"]
     depends_on:
-      - memcached
-      - postgresql
-    links:
-      - elasticsearch
-      - memcached
-      - postgresql
-    restart: ${RESTART}
-    volumes:
-      - ${BUILD_DIR}/helpdesk/zammad:/opt/zammad
+      postgresql:
+        condition: service_healthy
+      memcached:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://127.0.0.1:3000"]
+      interval: 300s
+      timeout: 120s
+      start_period: 120s
+      retries: 5
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.8
         aliases:
           - zammad-railsserver
 
-  scheduler:
-    image: ${IMAGE_REPO}:zammad${VERSION}
-    container_name: helpdesk-scheduler
-    command: ["zammad-scheduler"]
+  redis:
+    image: redis:7.4.3
+    container_name: helpdesk-redis
     dns: ${DNS_IP_INTERNAL}
     external_links:
       - operations:dns
-    depends_on:
-      - memcached
-      - railsserver
-    links:
-      - elasticsearch
-      - memcached
-      - postgresql
+    command: ["redis-server", "--save", ""]   # websocket sessions only, nothing to keep
     restart: ${RESTART}
-    volumes:
-      - ${BUILD_DIR}/helpdesk/zammad:/opt/zammad
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 60s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    networks:
+      operations_intranet:
+        ipv4_address: 172.34.12.15
+        aliases:
+          - zammad-redis
+
+  scheduler:
+    <<: *zammad-service
+    container_name: helpdesk-scheduler
+    command: ["zammad-scheduler"]
+    depends_on:
+      railsserver:
+        condition: service_healthy
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.9
@@ -166,21 +217,12 @@ services:
           - zammad-scheduler
 
   websocket:
-    image: ${IMAGE_REPO}:zammad${VERSION}
+    <<: *zammad-service
     container_name: helpdesk-websocket
     command: ["zammad-websocket"]
-    dns: ${DNS_IP_INTERNAL}
-    external_links:
-      - operations:dns
     depends_on:
-      - memcached
-      - railsserver
-    links:
-      - postgresql
-      - memcached
-    restart: ${RESTART}
-    volumes:
-      - ${BUILD_DIR}/helpdesk/zammad:/opt/zammad
+      railsserver:
+        condition: service_healthy
     networks:
       operations_intranet:
         ipv4_address: 172.34.12.10
