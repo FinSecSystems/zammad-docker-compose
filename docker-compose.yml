@@ -19,6 +19,7 @@ x-zammad: &zammad-service
     POSTGRESQL_DB_CREATE: "false"
     POSTGRESQL_OPTIONS: "?pool=50"
     REDIS_URL: redis://zammad-redis:6379
+    NGINX_SERVER_SCHEME: https           # zammad-nginx sends X-Forwarded-Proto from this; the TLS ends at the edge proxy, without it Rails sees http and fails the CSRF check
     ELASTICSEARCH_ENABLED: "true"
     ELASTICSEARCH_SCHEMA: http
     ELASTICSEARCH_HOST: zammad-elasticsearch
